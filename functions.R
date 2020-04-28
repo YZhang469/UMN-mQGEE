@@ -30,7 +30,7 @@ Q <- function(dat, method = "SQ"){ # method can have value "SQ" or "MQ"
   ## stage 2
   dat.s2 <- cbind.data.frame(dat[ , c("ID", "Y0", "A1", "Y1", "A2", "Y2", "Y3")], 
                              "Q2" = dat$Y2 + dat$Y3) # collapse repeated measures at the end of stage 2
-  mod.s2 <- glm(Q2 ~ Y0 + A1 + Y1 + A2 + A2 * (Y0 + A1 + Y1), data = dat.s2)
+  mod.s2 <- glm(Q2 ~ Y0 + A1 + Y1 + A2 + A2 * (Y0 + A1 + Y1), data = dat.s2) # time is not a covariate in collapsed outcome model
   dat.s2.opt <- dat.s2 # create a data set that performs optimal treatment and stores counterfactual outcomes at stage 2
   # if A2 = -1
   dat.s2a <- dat.s2
