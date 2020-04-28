@@ -1,31 +1,34 @@
-### simulation study code
+### code for simulation studies
 
 ## load packages
+library(knitr)
+library(ggplot2)
+library(ggpubr)
+library(gridExtra)
+library(grid)
+library(gtable)
+library(lemon)
+library(scales)
 
-## define metrics that assess the performance of a method
+## define metrics to assess the performance of a method: PCI, RMSE, bias
+# PCI is applicable to output of both functions "Q" and "QGEE", whereas RMSE and bias are only applicable to output of "QGEE"
 
 metric <- function(output, alpha1, alpha2, alpha3, beta2, beta3, gamma2, gamma3){
-  # probability of correctly identifying the stage-specific optimal rule (PCI)
-  d2opt <- ifelse((beta2+beta3) * output$dat$Y0 + (gamma2+gamma3) * output$dat$A1 < 0, -1, 1)
-  pci.s2 <- sum(output$dat.opt$A2 == d2opt) / nrow(output$dat.opt)
-  d1 <- function(a1){
+  # probability of correctly identifying (PCI) the stage-specific optimal rule
+  d2opt <- ifelse((beta2+beta3) * output$dat$Y0 + (gamma2+gamma3) * output$dat$A1 < 0, -1, 1) # true optimal rule at stage 2, as a function of Y0 and A1
+  pci.s2 <- sum(output$dat.opt$A2 == d2opt) / nrow(output$dat.opt) # stage 2 PCI
+  d1 <- function(a1){ # function to calculate the true value of average repeated-measures outcomes given baseline covariate Y0 and treatment A1 = a1, A2 = d2opt
     v <- ((alpha1+alpha2+alpha3) *  output$dat$Y0 + (gamma2+gamma3) * ifelse((beta2+beta3) * output$dat$Y0 + (gamma2+gamma3) * a1 < 0, -1, 1)) * a1
     return(v)
   }
-  d1opt <- ifelse(d1(-1) > d1(1), -1, 1)
-  pci.s1 <- sum(output$dat.opt$A1 == d1opt) / nrow(output$dat.opt)
+  d1opt <- ifelse(d1(-1) > d1(1), -1, 1) # true optimal rule at stage 1, assuming that optimal rule is followed at stage 2
+  pci.s1 <- sum(output$dat.opt$A1 == d1opt) / nrow(output$dat.opt) # stage 1 PCI
   
   # root mean square error (RMSE) of heterogeneous causal effect estimators
-  # true stage 1 heterogeneous treatment effect at time 1 (stage 1), 2 and 3 (stage 2)
-  # temp <- function(a1){
-  #   return(ifelse((beta2+beta3)*output$dat$Y0 + (gamma2+gamma3)*a1 < 0, -1, 1))
-  # }
-  delta1 <- 2*alpha1*output$dat.opt$Y0
-  # delta2 <- 2*alpha2*output$dat.opt$Y0 + gamma2*(temp(1)+temp(-1))
-  # delta3 <- 2*alpha3*output$dat.opt$Y0 + gamma3*(temp(1)+temp(-1))
-  delta2 <- 2*alpha2*output$dat.opt$Y0 + 2*gamma2*output$dat.opt$A2
-  delta3 <- 2*alpha3*output$dat.opt$Y0 + 2*gamma3*output$dat.opt$A2
-  # estimated stage 1 heterogeneous treatment effect
+  delta1 <- 2*alpha1*output$dat.opt$Y0 # true stage 1 individual treatment effects at time 1
+  delta2 <- 2*alpha2*output$dat.opt$Y0 + 2*gamma2*output$dat.opt$A2 # true stage 1 individual treatment effects at time 2, evaluated at ESTIMATED stage 2 optimal rule
+  delta3 <- 2*alpha3*output$dat.opt$Y0 + 2*gamma3*output$dat.opt$A2 # true stage 1 individual treatment effects at time 3, evaluated at ESTIMATED stage 2 optimal rule
+  # estimated stage 1 individual treatment effects
   dat <- cbind.data.frame(do.call(rbind, replicate(3, output$dat.opt[ , c("ID", "Y0", "A1")], simplify = FALSE)), 
                           "time" = rep(c(1, 2, 3), each = nrow(output$dat.opt)))
   dat <- dat[order(dat$ID), ]
@@ -34,30 +37,35 @@ metric <- function(output, alpha1, alpha2, alpha3, beta2, beta3, gamma2, gamma3)
   dat0 <- dat
   dat0$A1 <- -1
   delta.hat <- matrix(predict(output$mod.s1, newdata = dat1), ncol = 3, byrow = TRUE) - matrix(predict(output$mod.s1, newdata = dat0), ncol = 3, byrow = TRUE)
-  # rmse
+  # calculate RMSE
   rmse1 <- sqrt(mean((delta.hat[, 1] - delta1)^2))
   rmse2 <- sqrt(mean((delta.hat[, 2] - delta2)^2))
   rmse3 <- sqrt(mean((delta.hat[, 3] - delta3)^2))
-  rmse <- c(rmse1, rmse2, rmse3)
-  Y0.grid <- c(-3, -2, -1, 0, 1, 2, 3)
+  rmse <- c(rmse1, rmse2, rmse3) # RMSE of heterogeneous stage 1 causal effects at times 1, 2, 3, respectively
   
-  # bias
+  # bias of heterogeneous causal effect estimators
+  Y0.grid <- c(-3, -2, -1, 0, 1, 2, 3) # a grid of Y0 values
   bias.mat <- matrix(NA, nrow = 3, ncol = length(Y0.grid)) # matrix to store bias
-  # estimated stage 1 heterogeneous treatment effect
+  # true stage 1 individual treatment effects at times 1, 2, 3, respectively, based on TRUE stage 2 optimal rule
   delta1 <- 2*alpha1*Y0.grid
   delta2 <- 2*alpha2*Y0.grid + gamma2*(ifelse((beta2+beta3)*Y0.grid+gamma2+gamma3 < 0, -1, 1) + ifelse((beta2+beta3)*Y0.grid-gamma2-gamma3 < 0, -1, 1)) # calculate A2opt analytically
   delta3 <- 2*alpha3*Y0.grid + gamma3*(ifelse((beta2+beta3)*Y0.grid+gamma2+gamma3 < 0, -1, 1) + ifelse((beta2+beta3)*Y0.grid-gamma2-gamma3 < 0, -1, 1))
-  dat1.psd <- cbind.data.frame("Y0" = rep(Y0.grid, each = 3), "A1" = rep(1, length(Y0.grid)*3), "time" = rep(c(1, 2, 3), length(Y0.grid))) # pseudo data
-  dat0.psd <- cbind.data.frame("Y0" = rep(Y0.grid, each = 3), "A1" = rep(-1, length(Y0.grid)*3), "time" = rep(c(1, 2, 3), length(Y0.grid)))
+  # estimated stage 1 individual treatment effects
+  dat1.psd <- cbind.data.frame("Y0" = rep(Y0.grid, each = 3), "A1" = rep(1, length(Y0.grid)*3), "time" = rep(c(1, 2, 3), length(Y0.grid))) # pseudo data with A1 = 1
+  dat0.psd <- cbind.data.frame("Y0" = rep(Y0.grid, each = 3), "A1" = rep(-1, length(Y0.grid)*3), "time" = rep(c(1, 2, 3), length(Y0.grid))) # pseudo data with A1 = -1
   delta.hat <- matrix(predict(output$mod.s1, newdata = dat1.psd), ncol = 3, byrow = TRUE) - matrix(predict(output$mod.s1, newdata = dat0.psd), ncol = 3, byrow = TRUE)
+  # store bias values
   bias.mat[1, ] <- delta.hat[, 1] - delta1
   bias.mat[2, ] <- delta.hat[, 2] - delta2
   bias.mat[3, ] <- delta.hat[, 3] - delta3
+  
+  # return the calculated metrics
   return(list("pci.s2" = pci.s2, "pci.s1" = pci.s1, "rmse" = rmse, "bias.mat" = bias.mat))
 }
 
-## Simulation
-simulation <- function(I = 1000, 
+## a function to carry out the simulation study
+
+simulation <- function(I = 1000, # number of simulations
                        alpha1 = 0.7, alpha2 = 1, alpha3 = 1.2, beta2 = 0.5, beta3 = 0.8, gamma2 = 1, gamma3 = 1.5, 
                        sigma.v = 4, sigma.e = 3, lambda1 = 1, lambda2 = 1, lambda3 = 1){
   ss <- seq(40, 400, by = 40) # set sample size
@@ -189,8 +197,12 @@ simulation <- function(I = 1000,
               bias3.sqgee = bias3.sqgee, bias3.mqgee = bias3.mqgee))
 }
 
+## simulation studies: based on 1000 simulations
+
 set.seed(1)
-# correlated Outcomes
+
+# correlated outcomes
+
 sim.pos <- simulation(I = 1000, 
                       alpha1 = 2.0, alpha2 = 0, alpha3 = 0, beta2 = 1.8, beta3 = 2.4, gamma2 = 0.8, gamma3 = 1.2, 
                       sigma.v = 5, sigma.e = 3, lambda1 = 1, lambda2 = 1, lambda3 = 1)
@@ -201,7 +213,8 @@ sim.neg23 <- simulation(I = 1000,
                         alpha1 = 2.0, alpha2 = 0, alpha3 = 0, beta2 = 1.8, beta3 = 2.4, gamma2 = 0.8, gamma3 = 1.2, 
                         sigma.v = 5, sigma.e = 3, lambda1 = 1, lambda2 = -1, lambda3 = -1)
 
-# model Misspecification
+# model misspecification
+
 sim.pos.mis <- simulation(I = 1000, 
                           alpha1 = 2.0, alpha2 = 1.7, alpha3 = 1.6, beta2 = 1.8, beta3 = 2.4, gamma2 = 0.8, gamma3 = 1.2, 
                           sigma.v = 5, sigma.e = 3, lambda1 = 1, lambda2 = 1, lambda3 = 1)
@@ -211,3 +224,272 @@ sim.ind.mis <- simulation(I = 1000,
 sim.neg23.mis <- simulation(I = 1000, 
                             alpha1 = 2.0, alpha2 = 1.7, alpha3 = 1.6, beta2 = 1.8, beta3 = 2.4, gamma2 = 0.8, gamma3 = 1.2, 
                             sigma.v = 5, sigma.e = 3, lambda1 = 1, lambda2 = -1, lambda3 = -1)
+
+## results: tables and figures
+
+# summary table: for sample size 200 and 400 only
+
+mySum <- function(mean, sd){
+  paste(round(mean, 2), " (", round(sd, 2), ")", sep = "")
+}
+tabRes <- function(sim){
+  pci.200 <- sim$pci[sim$pci$sample.size == 200 & (sim$pci$method == "sqgee" | sim$pci$method == "mqgee") & sim$pci$stage == 1, ]
+  rmse2.200 <- sim$rmse2[sim$rmse2$sample.size == 200, ]
+  rmse3.200 <- sim$rmse3[sim$rmse3$sample.size == 200, ]
+  pci.400 <- sim$pci[sim$pci$sample.size == 400 & (sim$pci$method == "sqgee" | sim$pci$method == "mqgee") & sim$pci$stage == 1, ]
+  rmse2.400 <- sim$rmse2[sim$rmse2$sample.size == 400, ]
+  rmse3.400 <- sim$rmse3[sim$rmse3$sample.size == 400, ]
+  res.200 <- c(round(pci.200$pci[1], 3), mySum(rmse2.200$rmse.mean[1], rmse2.200$rmse.sd[1]), mySum(rmse3.200$rmse.mean[1], rmse3.200$rmse.sd[1]), 
+               round(pci.200$pci[2], 3), mySum(rmse2.200$rmse.mean[2], rmse2.200$rmse.sd[2]), mySum(rmse3.200$rmse.mean[2], rmse3.200$rmse.sd[2]))
+  res.400 <- c(round(pci.400$pci[1], 3), mySum(rmse2.400$rmse.mean[1], rmse2.400$rmse.sd[1]), mySum(rmse3.400$rmse.mean[1], rmse3.400$rmse.sd[1]), 
+               round(pci.400$pci[2], 3), mySum(rmse2.400$rmse.mean[2], rmse2.400$rmse.sd[2]), mySum(rmse3.400$rmse.mean[2], rmse3.400$rmse.sd[2]))
+  res <- rbind.data.frame(res.200, res.400)
+  colnames(res) <- c("pci.sqgee", "rmse2.sqgee", "rmse3.sqgee",
+                     "pci.mqgee", "rmse2.mqgee", "rmse3.mqgee")
+  return(res)
+}
+res <- rbind.data.frame(tabRes(sim.pos), tabRes(sim.ind), tabRes(sim.neg23), 
+                        tabRes(sim.pos.mis), tabRes(sim.ind.mis), tabRes(sim.neg23.mis))
+kable(res, "latex", longtable = T, booktabs = T, caption = "SimRes") # need knitr package
+
+# figure: plot of PCI at stage 1 and 2
+
+plot.pci <- function(sim){
+  pci.s1 <- sim$pci[sim$pci$stage == 1, c("sample.size", "method", "pci")]
+  pci.s2 <- sim$pci[sim$pci$stage == 2, c("sample.size", "method", "pci")]
+  plot.pci.s1 <- ggplot(data = pci.s1, aes(x = sample.size, y = pci, shape = method, color = method)) +
+    geom_line(aes(linetype = method)) + guides(linetype = FALSE) +
+    geom_point() +
+    labs(title = "", x = "Sample Size", y = "PCI") +
+    ylim(0.5, 1) + scale_x_continuous(breaks = seq(0, 500, 100)) +
+    scale_shape_discrete(name = "Method",
+                         breaks = c("sq", "mq", "sqgee", "mqgee"),
+                         labels = c("Standard Q-learning", "Modified Q-learning", 
+                                    "Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+    scale_color_discrete(name = "Method",
+                         breaks = c("sq", "mq", "sqgee", "mqgee"),
+                         labels = c("Standard Q-learning", "Modified Q-learning", 
+                                    "Standard Q-learning with GEE", "Modified Q-learning with GEE")) + 
+    theme(legend.position = "none")
+  plot.pci.s2 <- ggplot(data = pci.s2, aes(x = sample.size, y = pci, shape = method, color = method)) +
+    geom_line(aes(linetype = method)) + guides(linetype = FALSE) +
+    geom_point() +
+    labs(title = "", x = "Sample Size", y = "PCI") +
+    ylim(0.5, 1) + scale_x_continuous(breaks = seq(0, 500, 100)) +
+    scale_shape_discrete(name = "Method",
+                         breaks = c("sq", "mq", "sqgee", "mqgee"),
+                         labels = c("Standard Q-learning", "Modified Q-learning", 
+                                    "Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+    scale_color_discrete(name = "Method",
+                         breaks = c("sq", "mq", "sqgee", "mqgee"),
+                         labels = c("Standard Q-learning", "Modified Q-learning", 
+                                    "Standard Q-learning with GEE", "Modified Q-learning with GEE")) + 
+    theme(legend.position = "none")
+  return(list(plot.pci.s1, plot.pci.s2))
+}
+
+plot.pci.pos <- plot.pci(sim = sim.pos)
+plot.pci.ind <- plot.pci(sim = sim.ind)
+plot.pci.neg23 <- plot.pci(sim = sim.neg23)
+plot.pci.cor <- c(plot.pci.pos, plot.pci.ind, plot.pci.neg23)
+legend <- g_legend(plot.pci.cor[[1]] + theme(legend.position = "bottom", 
+                                             legend.title = element_text(size = 20), 
+                                             legend.text = element_text(size = 20)))
+plot.pci.pos.mis <- plot.pci(sim = sim.pos.mis)
+plot.pci.ind.mis <- plot.pci(sim = sim.ind.mis)
+plot.pci.neg23.mis <- plot.pci(sim = sim.neg23.mis)
+plot.pci.mis <- c(plot.pci.pos.mis, plot.pci.ind.mis, plot.pci.neg23.mis)
+
+plot.pci.sum <- c(plot.pci.cor, plot.pci.mis)
+row.titles <- c("(a1)", "(a2)", "(a3)", "(b1)", "(b2)", "(b3)")
+col.titles <- c("Stage 1", "Stage 2")
+png(filename = "pci.png", width = 40, height = 30, units = "cm", res = 300)
+grid.arrange(grobs = lapply(c(1, 3, 5, 7, 9, 11), function(i) {arrangeGrob(grobs = plot.pci.sum[i:(i+1)], left = textGrob(row.titles[(i-1)/2+1], y = 0.9, hjust = 0, gp = gpar(fontsize = 20)), nrow = 1)}), 
+             bottom = legend, nrow = 3, ncol = 2, as.table = FALSE)
+dev.off()
+
+# figure: plot of RMSE of stage 1 heterogeneous causal effects at times 1, 2, 3, conditional on estimated stage 2 optimal rules
+
+plot.rmse <- function(sim){
+  rmse1 <- sim$rmse1
+  rmse2 <- sim$rmse2
+  rmse3 <- sim$rmse3
+  pd<-position_dodge(10)
+  plot.rmse1 <- ggplot(data = rmse1, aes(x = sample.size, y = rmse.mean, shape = method, color = method)) +
+    geom_errorbar(aes(ymin = rmse.lower, ymax = rmse.upper), width = 3, position = pd)+
+    geom_line(aes(linetype = method), position = pd) + guides(linetype = FALSE) +
+    geom_point(position = pd) +
+    labs(title = "", x = "Sample Size", y = "RMSE") +
+    ylim(0, 10) + scale_x_continuous(breaks = seq(0, 400, 80)) +
+    scale_shape_discrete(name = "Method",
+                         breaks = c("sqgee", "mqgee"),
+                         labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+    scale_color_discrete(name = "Method",
+                         breaks = c("sqgee", "mqgee"),
+                         labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) + 
+    theme(legend.position = "none")
+  plot.rmse2 <- ggplot(data = rmse2, aes(x = sample.size, y = rmse.mean, shape = method, color = method)) +
+    geom_errorbar(aes(ymin = rmse.lower, ymax = rmse.upper), width = 3, position = pd)+
+    geom_line(aes(linetype = method)) + guides(linetype = FALSE) +
+    geom_point(position = pd) +
+    labs(title = "", x = "Sample Size", y = "RMSE") +
+    ylim(0, 10) + scale_x_continuous(breaks = seq(0, 400, 80)) +
+    scale_shape_discrete(name = "Method",
+                         breaks = c("sqgee", "mqgee"),
+                         labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+    scale_color_discrete(name = "Method",
+                         breaks = c("sqgee", "mqgee"),
+                         labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) + 
+    theme(legend.position = "none")
+  plot.rmse3 <- ggplot(data = rmse3, aes(x = sample.size, y = rmse.mean, shape = method, color = method)) +
+    geom_errorbar(aes(ymin = rmse.lower, ymax = rmse.upper), width = 3, position = pd)+
+    geom_line(aes(linetype = method)) + guides(linetype = FALSE) +
+    geom_point(position = pd) +
+    labs(title = "", x = "Sample Size", y = "RMSE") +
+    ylim(0, 10) + scale_x_continuous(breaks = seq(0, 400, 80)) +
+    scale_shape_discrete(name = "Method",
+                         breaks = c("sqgee", "mqgee"),
+                         labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+    scale_color_discrete(name = "Method",
+                         breaks = c("sqgee", "mqgee"),
+                         labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) + 
+    theme(legend.position = "none")
+  return(list(plot.rmse1, plot.rmse2, plot.rmse3))
+}
+
+plot.rmse.pos <- plot.rmse(sim = sim.pos)
+plot.rmse.ind <- plot.rmse(sim = sim.ind)
+plot.rmse.neg23 <- plot.rmse(sim = sim.neg23)
+plot.rmse.cor <- c(plot.rmse.pos, plot.rmse.ind, plot.rmse.neg23)
+legend <- g_legend(plot.rmse.cor[[1]] + theme(legend.position = "bottom", 
+                                              legend.title = element_text(size = 20), 
+                                              legend.text = element_text(size = 20)))
+plot.rmse.pos.mis <- plot.rmse(sim = sim.pos.mis)
+plot.rmse.ind.mis <- plot.rmse(sim = sim.ind.mis)
+plot.rmse.neg23.mis <- plot.rmse(sim = sim.neg23.mis)
+plot.rmse.mis <- c(plot.rmse.pos.mis, plot.rmse.ind.mis, plot.rmse.neg23.mis)
+
+plot.rmse.sum <- c(plot.rmse.cor, plot.rmse.mis)
+row.titles <- c("(a1)", "(a2)", "(a3)", "(b1)", "(b2)", "(b3)")
+col.titles <- c("Time 1", "Time 2", "Time 3")
+png(filename = "rmse.png", width = 45, height = 30, units = "cm", res = 600)
+grid.arrange(grobs = lapply(c(1, 4, 7, 10, 13, 16), function(i) {arrangeGrob(grobs = plot.rmse.sum[i:(i+2)], left = textGrob(row.titles[(i-1)/3+1], y = 0.9, hjust = 0, gp = gpar(fontsize = 20)), nrow = 1)}), 
+             bottom = legend, nrow = 3, ncol = 2, as.table = FALSE)
+dev.off()
+
+# figure: plot of bias of stage 1 heterogeneous causal effects at times 1, 2, 3, conditional on true stage 2 optimal rules
+
+plot.bias <- function(sim){
+  bias1.sqgee <- sim$bias1.sqgee[sim$bias1.sqgee$sample.size == 200 | sim$bias1.sqgee$sample.size == 400, ]
+  bias1.sqgee$sample.size <- as.factor(bias1.sqgee$sample.size)
+  bias1.mqgee <- sim$bias1.mqgee[sim$bias1.mqgee$sample.size == 200 | sim$bias1.mqgee$sample.size == 400, ]
+  bias1.mqgee$sample.size <- as.factor(bias1.mqgee$sample.size)
+  bias2.sqgee <- sim$bias2.sqgee[sim$bias2.sqgee$sample.size == 200 | sim$bias2.sqgee$sample.size == 400, ]
+  bias2.sqgee$sample.size <- as.factor(bias2.sqgee$sample.size)
+  bias2.mqgee <- sim$bias2.mqgee[sim$bias2.mqgee$sample.size == 200 | sim$bias2.mqgee$sample.size == 400, ]
+  bias2.mqgee$sample.size <- as.factor(bias2.mqgee$sample.size)
+  bias3.sqgee <- sim$bias3.sqgee[sim$bias3.sqgee$sample.size == 200 | sim$bias3.sqgee$sample.size == 400, ]
+  bias3.sqgee$sample.size <- as.factor(bias3.sqgee$sample.size)
+  bias3.mqgee <- sim$bias3.mqgee[sim$bias3.mqgee$sample.size == 200 | sim$bias3.mqgee$sample.size == 400, ]
+  bias3.mqgee$sample.size <- as.factor(bias3.mqgee$sample.size)
+  pd<-position_dodge(0.1)
+  plot.bias1.sqgee <- ggplot(data = bias1.sqgee, aes(x = Y0, y = bias.mean, shape = sample.size, color = sample.size)) + 
+    geom_errorbar(aes(ymin = bias.lower, ymax = bias.upper), width = 0.1, position = pd) + 
+    geom_line(aes(linetype = sample.size)) + guides(linetype = FALSE) + 
+    geom_point(position = pd) + 
+    labs(title = "", x = "Y0", y = "Bias") +
+    ylim(-20, 20) + scale_x_continuous(breaks = seq(-3, 3, 1)) +
+    scale_shape_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) +
+    scale_color_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) + 
+    theme(legend.position = "none")
+  plot.bias1.mqgee <- ggplot(data = bias1.mqgee, aes(x = Y0, y = bias.mean, shape = sample.size, color = sample.size)) + 
+    geom_errorbar(aes(ymin = bias.lower, ymax = bias.upper), width = 0.1, position = pd) + 
+    geom_line(aes(linetype = sample.size)) + guides(linetype = FALSE) + 
+    geom_point(position = pd) + 
+    labs(title = "", x = "Y0", y = "Bias") +
+    ylim(-20, 20) + scale_x_continuous(breaks = seq(-3, 3, 1)) +
+    scale_shape_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) +
+    scale_color_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) + 
+    theme(legend.position = "none")
+  plot.bias2.sqgee <- ggplot(data = bias2.sqgee, aes(x = Y0, y = bias.mean, shape = sample.size, color = sample.size)) + 
+    geom_errorbar(aes(ymin = bias.lower, ymax = bias.upper), width = 0.1, position = pd) + 
+    geom_line(aes(linetype = sample.size)) + guides(linetype = FALSE) + 
+    geom_point(position = pd) + 
+    labs(title = "", x = "Y0", y = "Bias") +
+    ylim(-20, 20) + scale_x_continuous(breaks = seq(-3, 3, 1)) +
+    scale_shape_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) +
+    scale_color_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) + 
+    theme(legend.position = "none")
+  plot.bias2.mqgee <- ggplot(data = bias2.mqgee, aes(x = Y0, y = bias.mean, shape = sample.size, color = sample.size)) + 
+    geom_errorbar(aes(ymin = bias.lower, ymax = bias.upper), width = 0.1, position = pd) + 
+    geom_line(aes(linetype = sample.size)) + guides(linetype = FALSE) + 
+    geom_point(position = pd) + 
+    labs(title = "", x = "Y0", y = "Bias") +
+    ylim(-20, 20) + scale_x_continuous(breaks = seq(-3, 3, 1)) +
+    scale_shape_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) +
+    scale_color_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) + 
+    theme(legend.position = "none")
+  plot.bias3.sqgee <- ggplot(data = bias3.sqgee, aes(x = Y0, y = bias.mean, shape = sample.size, color = sample.size)) + 
+    geom_errorbar(aes(ymin = bias.lower, ymax = bias.upper), width = 0.1, position = pd) + 
+    geom_line(aes(linetype = sample.size)) + guides(linetype = FALSE) + 
+    geom_point(position = pd) + 
+    labs(title = "", x = "Y0", y = "Bias") +
+    ylim(-20, 20) + scale_x_continuous(breaks = seq(-3, 3, 1)) +
+    scale_shape_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) +
+    scale_color_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) + 
+    theme(legend.position = "none")
+  plot.bias3.mqgee <- ggplot(data = bias3.mqgee, aes(x = Y0, y = bias.mean, shape = sample.size, color = sample.size)) + 
+    geom_errorbar(aes(ymin = bias.lower, ymax = bias.upper), width = 0.1, position = pd) + 
+    geom_line(aes(linetype = sample.size)) + guides(linetype = FALSE) + 
+    geom_point(position = pd) + 
+    labs(title = "", x = "Y0", y = "Bias") +
+    ylim(-20, 20) + scale_x_continuous(breaks = seq(-3, 3, 1)) +
+    scale_shape_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) +
+    scale_color_discrete(name = "Sample Size",
+                         breaks = c("200", "400"),
+                         labels = c("200", "400")) + 
+    theme(legend.position = "none")
+  return(list(plot.bias1.sqgee, plot.bias1.mqgee, plot.bias2.sqgee, plot.bias2.mqgee, plot.bias3.sqgee, plot.bias3.mqgee))
+}
+
+plot.bias.pos <- plot.bias(sim = sim.pos)
+plot.bias.ind <- plot.bias(sim = sim.ind)
+plot.bias.neg23 <- plot.bias(sim = sim.neg23)
+legend <- g_legend(plot.bias.pos[[1]] + theme(legend.position = "bottom", 
+                                              legend.title = element_text(size = 17), 
+                                              legend.text = element_text(size = 17)))
+plot.bias.pos.mis <- plot.bias(sim = sim.pos.mis)
+plot.bias.ind.mis <- plot.bias(sim = sim.ind.mis)
+plot.bias.neg23.mis <- plot.bias(sim = sim.neg23.mis)
+
+plot.bias.sum <- c(plot.bias.pos, plot.bias.pos.mis, plot.bias.ind, plot.bias.ind.mis, plot.bias.neg23, plot.bias.neg23.mis)
+row.titles <- c("(a1) Time 1", "      Time 2", "      Time 3", "(b1) Time 1", "      Time 2", "      Time 3", 
+                "       (a2)", rep("           ", 2), "       (b2)", rep("           ", 2), 
+                "       (a3)", rep("           ", 2), "       (b3)", rep("           ", 2))
+col.titles <- c("Standard Q-learning with GEE", "Modified Q-learning with GEE")
+png(filename = "bias.png", width = 60, height = 60, units = "cm", res = 300)
+grid.arrange(grobs = lapply(seq(1, 36, 2), function(i) {arrangeGrob(grobs = plot.bias.sum[i:(i+1)], left = textGrob(row.titles[(i-1)/2+1], y = 0.9, hjust = 0.5, gp = gpar(fontsize = 17)), nrow = 1)}), 
+             bottom = legend, nrow = 6, ncol = 3, as.table = FALSE)
+dev.off()
