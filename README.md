@@ -10,7 +10,7 @@ The document simulation.R displays the code for simulation studies performed in 
 
 ## Application
 
-To illustrate the implementation of modified Q-learning with GEE, we use a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015).
+To illustrate the implementation of modified Q-learning with GEE, we use a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). The data set is readable from the text file ENGAGEDataWideFormat.txt and has 250 observations.
 
 ### References
 
