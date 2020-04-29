@@ -2,7 +2,7 @@
 
 ## load data
 
-dat <- read.table("5.TutorialDatasetWideFormat.txt", header = TRUE)
+dat <- read.table("ENGAGEDataWideFormat.txt", header = TRUE)
 
 ## load packages
 
