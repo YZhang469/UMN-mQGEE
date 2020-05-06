@@ -1,5 +1,7 @@
 # Modified Q-learning with generalized estimating equations (GEE) for optimizing dynamic treatment regimes
 
+This repository contains three files of R code for the Q-learning with GEE project and a text file of the data set used in the application section.
+
 ## Custom functions
 
 The document functions.R lists all custom functions for Q-learning used in the simulation.
@@ -10,7 +12,7 @@ The document simulation.R displays the code for simulation studies performed in 
 
 ## Application
 
-To illustrate the implementation of modified Q-learning with GEE, we use a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). The data set is readable from the text file ENGAGEDataWideFormat.txt and has 250 observations.
+To illustrate the implementation of modified Q-learning with GEE, we analyze a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). The data set is readable from the text file ENGAGEDataWideFormat.txt and has 250 observations.
 
 ### References
 
