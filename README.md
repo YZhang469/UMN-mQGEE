@@ -9,6 +9,8 @@ The R scripts display functions and syntax that are used to carry out the simula
 The document [functions.R](https://github.com/YZhang469/MQGEE/blob/master/functions.R) lists all the custom functions used in the simulation. It does not produce any results.
 
 * The function `generateData.joint` generates a data set, where the repeated-measures outcomes follow a multivariate normal distribution. This is equivalent to a conditional data generating mechanism with a unmeasured covariate.
+* The function `Q` analyzes the data set generated using composite Q-learning where the repeated-measures outcomes are collapsed with a weighted average. Users can choose between standard Q-learning and modified Q-learning.
+* The function `QGEE` analyzes the data set generated using our proposed Q-learning with GEE, where the repeated-measures outcomes are treated as a vector.
 
 ## Simulation code
 
