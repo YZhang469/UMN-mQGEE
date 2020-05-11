@@ -14,7 +14,7 @@ The document [functions.R](https://github.com/YZhang469/MQGEE/blob/master/functi
 * The function `Q` analyzes the data set generated using composite Q-learning where the repeated-measures outcomes are collapsed with a weighted average. Users can choose between standard Q-learning and modified Q-learning. `Q` outputs a list of two models and two data sets: estimated models for stage 1 and stage 2 Q-functions using linear squares estimators, the original data set, and the estimated data set with optimal (counterfactual) outcomes based on parameter estimates from both Q-functions and the choice of standard or modified Q-learning.
 * The function `QGEE` analyzes the data set generated using our proposed Q-learning with GEE, where the repeated-measures outcomes are treated as a vector. Likewise, users can choose between standard Q-learning and modified Q-learning. The function utilizes the R package [geepack](https://cran.r-project.org/web/packages/geepack/geepack.pdf) to perform estimation using GEE. Users have to specify the working correlations at both stage 1 and stage 2; the default is "unstructured" for stage 2 and "exchangeable" for stage 1. `QGEE` outputs a list of two models and two data sets: estimated stage 1 and stage 2 models using generalized estimating equations, the original data set, and the estimated data set with optimal (counterfactual) outcomes based on parameter estimated from both Q-functions and the choice of standard or modified Q-learning.
 
-### Simulation code and results summary
+### Simulation code and results
 
 The document [simulation.R](https://github.com/YZhang469/MQGEE/blob/master/simulation.R) contains the code for simulation studies performed in the MQGEE paper.
 
@@ -27,9 +27,14 @@ The document [simulation.R](https://github.com/YZhang469/MQGEE/blob/master/simul
 ## Application
 
 ### Data set
-To illustrate the implementation of modified Q-learning with GEE, we analyze a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). The data set is readable from the text file [ENGAGEDataWideFormat.txt](https://github.com/YZhang469/MQGEE/blob/master/ENGAGEDataWideFormat.txt) and has 250 observations.
+
+To illustrate the implementation of modified Q-learning with GEE, we analyze a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). ENGAGE is a sMART study for patients suffering from relatively severe substance-use disorders. The data set is readable from the text file [ENGAGEDataWideFormat.txt](https://github.com/YZhang469/MQGEE/blob/master/ENGAGEDataWideFormat.txt).
+
+The format of the data is (X<sub>0</sub>, A<sub>1</sub>, Y<sub>1</sub>, R, A<sub>2</sub>, Y<sub>2</sub>, Y<sub>3</sub>) with a sample size of 250. X<sub>0</sub> represents the baseline covariates including age, gender, an indicator of post-secondary education, and the number of heavy drinking days. A<sub>1</sub> is a binary variable with values from {-1, 1}, indicating the treatment received at stage 1. Y<sub>1</sub> is the treatment readiness, which is the outcome of interest, measured right after stage 1 treatment period. R is a tailoring variable indicating whether an individual responded to the assigned stage 1 treatment. A<sub>2</sub> takes values from {-1, 0, 1}, depending on the embedding tailoring. Y<sub>2</sub> and Y<sub>3</sub> are the repeated-measures outcome at the end of stage 2.
 
 ### Analysis
+
+The function `analyzeData` analyzes the abovementioned data set using Q-learning with GEE in the context of the simplified ENGAGE study. Users can specify whether they want to use standard Q-learning or modified Q-learning. Results are then summarized and relevant figures are plotted.
 
 ## References
 
