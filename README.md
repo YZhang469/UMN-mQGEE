@@ -22,7 +22,7 @@ The document [simulation.R](https://github.com/YZhang469/MQGEE/blob/master/simul
 
 * The function `simulation` runs I simulations, where I is the number of simulations and is user-specified, and generates a list of metrics associated with the simulated data sets.
 
-* The rest of the script shows the code to perform the simulation under different scenarios discussed in the MQGEE paper, and summarize the results using tables and figures.
+* The rest of the script shows the code to perform the simulation under different scenarios discussed in the MQGEE paper, and summarize the results using tables and figures. Note that it usually takes from 30 minutes to 1 hour for 1000 simulations to run.
 
 ## Application
 
