@@ -18,7 +18,11 @@ The document [functions.R](https://github.com/YZhang469/MQGEE/blob/master/functi
 
 The document [simulation.R](https://github.com/YZhang469/MQGEE/blob/master/simulation.R) contains the code for simulation studies performed in the MQGEE paper.
 
-* The function `metric` defines the metrics we use to compare the performance of different methods. It returns a list of four elements for an underlying data set: `pci.s2`, a scalar value indicating the empirical probability of correctly identifying the stage 2 optimal rule; `pci.s1`, a scalar value indicating the empirical probablity of correctly identifying the stage 1 optimal rule; `rmse`, a vector of three elements, with each element being the root mean square error of the estimates of heterogeneous (individual/conditional) causal effect of at each time point; `bias.mat`, a 3\*7 matrix
+* The function `metric` defines the metrics we use to compare the performance of different methods. It returns a list of four elements for an underlying data set: `pci.s2`, a scalar value indicating the empirical probability of correctly identifying the stage 2 optimal rule; `pci.s1`, a scalar value indicating the empirical probablity of correctly identifying the stage 1 optimal rule; `rmse`, a vector of three elements, with each element being the root mean square error of the estimates of heterogeneous (individual/conditional) causal effect of at each time point; `bias.mat`, a 3\*7 matrix, where each column represents the bias of causal effect estimates at various time points based on each value of the baseline measurement Y<sub>0</sub> in {-3, -2, -1, 0, 1, 2, 3}.
+
+* The function `simulation` runs I simulations, where I is the number of simulations and is user-specified, and generates a list of metrics associated with the simulated data sets.
+
+* The rest of the script shows the code to perform the simulation under different scenarios discussed in the MQGEE paper, and summarize the results using tables and figures.
 
 ## Application
 
