@@ -2,7 +2,7 @@
 
 ## load data
 
-dat <- read.table("ENGAGEDataWideFormat.txt", header = TRUE)
+dat <- read.table("http://supp.apa.org/psycarticles/supplemental/met0000219/5.TutorialDatasetWideFormat.txt", header = TRUE)
 
 ## load packages
 
