@@ -1,8 +1,6 @@
 # Modified Q-learning with generalized estimating equations (GEE) for optimizing dynamic treatment regimes
 
-This repository contains three R scripts for the Q-learning with GEE project and a text file of the data set used in the application section.
-
-The R scripts display functions and syntax that are used to carry out the simulation study and data analysis. The results in the MQGEE paper can be reproduced by running the code in statistical software R. The following sections briefly explain how to use the files.
+This repository contains three R scripts for the Q-learning with GEE project. The R scripts display functions and syntax that are used to carry out the simulation study and data analysis. The results in the MQGEE paper can be reproduced by running the code in statistical software R. The following sections briefly explain how to use the files.
 
 ## Simulation study
 
