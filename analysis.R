@@ -48,12 +48,8 @@ analyzeData <- function(dat,
     dat.s2.opt$Y[rand.sample] <- predict(mod.s2, newdata = dat.s2.opt[rand.sample, ])
   }
   else if (method == "MQGEE"){
-    int2 <- as.matrix(cbind.data.frame(dat.s2$A2, dat.s2$A2*ifelse(dat.s2$time==3, 1, 0), 
-                                       dat.s2$A2*dat.s2$CenteredAge, dat.s2$A2*dat.s2$Male, dat.s2$A2*dat.s2$Education, 
-                                       dat.s2$A2*dat.s2$HDDays, dat.s2$A2*dat.s2$A1, dat.s2$A2*dat.s2$Y1, 
-                                       dat.s2$A2*dat.s2$CenteredAge*ifelse(dat.s2$time==3, 1, 0), dat.s2$A2*dat.s2$Male*ifelse(dat.s2$time==3, 1, 0), dat.s2$A2*dat.s2$Education*ifelse(dat.s2$time==3, 1, 0), 
-                                       dat.s2$A2*dat.s2$HDDays*ifelse(dat.s2$time==3, 1, 0), dat.s2$A2*dat.s2$A1*ifelse(dat.s2$time==3, 1, 0), dat.s2$A2*dat.s2$Y1*ifelse(dat.s2$time==3, 1, 0)))[rand.sample, ] %*% coef(mod.s2)[c(9, 16:28)]
-    dat.s2.opt$Y[rand.sample] <- dat.s2$Y[rand.sample] + 2 * ifelse(dat.s2.opt$A2[rand.sample] == dat.s2$A2[rand.sample], 0, 1) * abs(int2)
+    int2 <- (dat.s2b$Y - dat.s2a$Y)/2
+    dat.s2.opt$Y[rand.sample] <- dat.s2$Y[rand.sample] + 2 * ifelse(dat.s2.opt$A2[rand.sample] == dat.s2$A2[rand.sample], 0, 1) * dat.s2.opt$A2[rand.sample] * int2
   }
   
   # construct stage 1 data
@@ -88,13 +84,8 @@ analyzeData <- function(dat,
     dat.s1.opt$Y <- predict(mod.s1, newdata = dat.s1.opt)
   }
   else if (method == "MQGEE"){
-    int1 <- as.matrix(cbind.data.frame(dat.s1$A1, dat.s1$A1*ifelse(dat.s1$time==2, 1, 0), dat.s1$A1*ifelse(dat.s1$time==3, 1, 0), 
-                                       dat.s1$A1*dat.s1$CenteredAge, dat.s1$A1*dat.s1$Male, dat.s1$A1*dat.s1$Education, dat.s1$A1*dat.s1$HDDays, 
-                                       dat.s1$A1*dat.s1$CenteredAge*ifelse(dat.s1$time==2, 1, 0), dat.s1$A1*dat.s1$CenteredAge*ifelse(dat.s1$time==3, 1, 0), 
-                                       dat.s1$A1*dat.s1$Male*ifelse(dat.s1$time==2, 1, 0), dat.s1$A1*dat.s1$Male*ifelse(dat.s1$time==3, 1, 0), 
-                                       dat.s1$A1*dat.s1$Education*ifelse(dat.s1$time==2, 1, 0), dat.s1$A1*dat.s1$Education*ifelse(dat.s1$time==3, 1, 0), 
-                                       dat.s1$A1*dat.s1$HDDays*ifelse(dat.s1$time==2, 1, 0), dat.s1$A1*dat.s1$HDDays*ifelse(dat.s1$time==3, 1, 0))) %*% coef(mod.s1)[c(8, 17:30)]
-    dat.s1.opt$Y <- dat.s1$Y + 2 * ifelse(dat.s1.opt$A1 == dat.s1$A1, 0, 1) * abs(int1)
+    int1 <- (dat.s1b$Y - dat.s1a$Y)/2
+    dat.s1.opt$Y <- dat.s1$Y + 2 * ifelse(dat.s1.opt$A1 == dat.s1$A1, 0, 1) * dat.s1.opt$A1 * int1
   }
   
   dat.opt <- cbind.data.frame(dat.s1.opt[ , c("SubjectID", "CenteredAge", "Male", "Education", "HDDays", "A1", "R", "A2", "time", "Y")])
@@ -178,7 +169,7 @@ dev.off()
 
 table(output.mqgee$dat.opt$A1)/nrow(dat)
 # -1     1 
-# 0.844 0.156 
+# 0.84 0.16 
 table(output.mqgee$dat.opt$A2)/nrow(dat)
 # -1     0     1 
 # 0.068 0.700 0.232 
