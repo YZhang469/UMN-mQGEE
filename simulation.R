@@ -267,12 +267,12 @@ ggplot(pci, aes(x = sample.size, y = pci, shape = method, color = method)) +
   ylim(0.5, 1) + scale_x_continuous(breaks = seq(0, 500, 100)) +
   scale_shape_discrete(name = "Method",
                        breaks = c("sq", "mq", "sqgee", "mqgee"),
-                       labels = c("Standard Q-learning", "Modified Q-learning",
-                                  "Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+                       labels = c("Composite Q-learning", "Modified composite Q-learning",
+                                  "GEE Q-learning", "Modified GEE Q-learning")) +
   scale_color_discrete(name = "Method",
                        breaks = c("sq", "mq", "sqgee", "mqgee"),
-                       labels = c("Standard Q-learning", "Modified Q-learning",
-                                  "Standard Q-learning with GEE", "Modified Q-learning with GEE")) + 
+                       labels = c("Composite Q-learning", "Modified composite Q-learning",
+                                  "GEE Q-learning", "Modified GEE Q-learning")) + 
   facet_grid(cor ~ mis + stage) + 
   theme(legend.position = "bottom", legend.title = element_text(size = 12), legend.text = element_text(size = 12), 
         strip.text.x = element_text(size = 12), strip.text.y = element_text(size = 12))
@@ -301,10 +301,10 @@ ggplot(rmse, aes(x = sample.size, y = rmse.mean, shape = method, color = method)
        ylim(0, 10) + scale_x_continuous(breaks = seq(0, 400, 80)) +
        scale_shape_discrete(name = "Method",
                             breaks = c("sqgee", "mqgee"),
-                            labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+                            labels = c("GEE Q-learning", "Modified GEE Q-learning")) +
        scale_color_discrete(name = "Method",
                             breaks = c("sqgee", "mqgee"),
-                            labels = c("Standard Q-learning with GEE", "Modified Q-learning with GEE")) +
+                            labels = c("GEE Q-learning", "Modified GEE Q-learning")) +
   facet_grid(cor ~ mis + time) + 
   theme(legend.position = "bottom", legend.title = element_text(size = 12), legend.text = element_text(size = 12), 
         strip.text.x = element_text(size = 12), strip.text.y = element_text(size = 12))
@@ -323,7 +323,7 @@ bias <- cbind.data.frame(rbind.data.frame(sim.pos$bias1.sqgee, sim.pos$bias1.mqg
                          "mis" = rep(c("(a)", "(b)"), each = 70*2*3*3))
 bias <- bias[bias$sample.size == 200 | bias$sample.size == 400, ]
 bias$sample.size <- factor(bias$sample.size, levels = c(200, 400))
-bias$method <- factor(bias$method, levels = c("sqgee","mqgee"), labels = c("SQGEE", "MQGEE"))
+bias$method <- factor(bias$method, levels = c("sqgee","mqgee"), labels = c("QGEE", "Modified QGEE"))
 bias$time <- factor(bias$time, levels = c(1, 2, 3), labels = c("Time 1", "Time 2", "Time 3"))
 bias$cor <- factor(bias$cor, levels = c("positive", "independent", "negative"), labels = c("Positive", "Independent", "Negative"))
 
