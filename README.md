@@ -26,7 +26,7 @@ The document [simulation.R](https://github.com/YZhang469/MQGEE/blob/master/simul
 
 ### Data set
 
-To illustrate the implementation of modified GEE Q-learning, we analyze a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). ENGAGE is a sMART study for patients suffering from relatively severe substance-use disorders. The data set is readable from [5.TutorialDatasetWideFormat.txt](http://supp.apa.org/psycarticles/supplemental/met0000219/5.TutorialDatasetWideFormat.txt).
+To illustrate the implementation of modified GEE Q-learning, we analyze a simulated data set (Nahum-Shani, 2020) from a simple version of ENGAGE study (McKay, 2015). ENGAGE is a sMART study for patients suffering from relatively severe substance-use disorders. The data set is readable from [TutorialDatasetWideFormat.txt](https://github.com/dziakj1/SmartTutorialAppendix/blob/master/TutorialDatasetWideFormat.txt).
 
 The format of the data is (X<sub>0</sub>, A<sub>1</sub>, Y<sub>1</sub>, R, A<sub>2</sub>, Y<sub>2</sub>, Y<sub>3</sub>) with a sample size of 250. X<sub>0</sub> represents the baseline covariates including age, gender, an indicator of post-secondary education, and the number of heavy drinking days. A<sub>1</sub> is a binary variable with values from {-1, 1}, indicating the treatment received at stage 1. Y<sub>1</sub> is the treatment readiness, which is the outcome of interest, measured right after stage 1 treatment period. R is a tailoring variable indicating whether an individual responded to the assigned stage 1 treatment. A<sub>2</sub> takes values from {-1, 0, 1}, depending on the embedding tailoring. Y<sub>2</sub> and Y<sub>3</sub> are the repeated-measures outcome at the end of stage 2.
 
