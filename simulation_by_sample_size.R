@@ -10,6 +10,9 @@ library(gtable)
 library(lemon)
 library(scales)
 
+## load help functions
+source("function.R")
+
 ###################################################
 ########## by sample size, equal weights ##########
 ###################################################
