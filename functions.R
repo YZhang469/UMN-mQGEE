@@ -220,27 +220,28 @@ sumR2 <- function(sigma.v = 5, sigma.e = 3){
 ########## Metrics ##########
 #############################
 
+## define metrics to assess the performance of a method: PCI, RMSE, bias
+# PCI is applicable to output of both functions "Q" and "QGEE", whereas RMSE and bias are only applicable to output of "QGEE"
+
 metric <- function(output, w = c(1/3, 1/3, 1/3), 
                    alpha1, alpha2, alpha3, beta2, beta3, gamma2, gamma3, 
                    sigma.v, sigma.e, lambda1, lambda2, lambda3){
-  # PCI
-  d2opt <- ifelse((w[2]*beta2+w[3]*beta3) * output$dat$Z1 + (w[2]*gamma2+w[3]*gamma3) * output$dat$A1 > 0, -1, 1)
-  pci.s2 <- sum(output$dat.opt$A2 == d2opt) / nrow(output$dat.opt)
-  d1 <- function(a1){
+  
+  # probability of correctly identifying (PCI) the stage-specific optimal rule
+  d2opt <- ifelse((w[2]*beta2+w[3]*beta3) * output$dat$Z1 + (w[2]*gamma2+w[3]*gamma3) * output$dat$A1 > 0, -1, 1) # true optimal rule at stage 2, as a function of Z1 and A1
+  pci.s2 <- sum(output$dat.opt$A2 == d2opt) / nrow(output$dat.opt) # stage 2 PCI
+  d1 <- function(a1){ # function to calculate the true value of average repeated-measures outcomes given baseline covariate Y0 and treatment A1 = a1, A2 = d2opt
     v <- ((w[1]*alpha1+w[2]*alpha2+w[3]*alpha3) *  output$dat$Z1 + 
             (gamma2+gamma3) * ifelse((w[2]*beta2+w[3]*beta3) * output$dat$Z1 + (w[2]*gamma2+w[3]*gamma3) * a1 > 0, -1, 1)) * a1
     return(v)
   }
-  d1opt <- ifelse(d1(-1) < d1(1), -1, 1)
-  pci.s1 <- sum(output$dat.opt$A1 == d1opt) / nrow(output$dat.opt)
-  # RMSE
-  # true stage 1 heterogeneous treatment effect at time 1 (stage 1), 2 and 3 (stage 2)
-  # temp <- function(a1){
-  #   return(ifelse((beta2+beta3)*output$dat$Z1 + (gamma2+gamma3)*a1 > 0, -1, 1))
-  # }
-  delta1 <- 2*alpha1*output$dat.opt$Z1
-  delta2 <- 2*alpha2*output$dat.opt$Z1# + 2*gamma2*output$dat.opt$A2
-  delta3 <- 2*alpha3*output$dat.opt$Z1# + 2*gamma3*output$dat.opt$A2
+  d1opt <- ifelse(d1(-1) < d1(1), -1, 1) # true optimal rule at stage 1, assuming that optimal rule is followed at stage 2
+  pci.s1 <- sum(output$dat.opt$A1 == d1opt) / nrow(output$dat.opt) # stage 1 PCI
+  
+  # root mean square error (RMSE) of heterogeneous causal effect estimators
+  delta1 <- 2*alpha1*output$dat.opt$Z1 # true stage 1 individual treatment effects at time 1
+  delta2 <- 2*alpha2*output$dat.opt$Z1 # true stage 1 individual treatment effects at time 2, evaluated at ESTIMATED stage 2 optimal rule
+  delta3 <- 2*alpha3*output$dat.opt$Z1 # true stage 1 individual treatment effects at time 3, evaluated at ESTIMATED stage 2 optimal rule
   # estimated stage 1 heterogeneous treatment effect
   dat <- cbind.data.frame(do.call(rbind, replicate(3, output$dat.opt[ , c("ID", "Z1", "A1")], simplify = FALSE)), 
                           "time" = rep(c(1, 2, 3), each = nrow(output$dat.opt)))
@@ -250,24 +251,29 @@ metric <- function(output, w = c(1/3, 1/3, 1/3),
   dat0 <- dat
   dat0$A1 <- -1
   delta.hat <- matrix(predict(output$mod.s1, newdata = dat1), ncol = 3, byrow = TRUE) - matrix(predict(output$mod.s1, newdata = dat0), ncol = 3, byrow = TRUE)
-  # rmse
+  # calculate RMSE
   rmse1 <- sqrt(mean((delta.hat[, 1] - delta1)^2))
   rmse2 <- sqrt(mean((delta.hat[, 2] - delta2)^2))
   rmse3 <- sqrt(mean((delta.hat[, 3] - delta3)^2))
-  rmse <- c(rmse1, rmse2, rmse3)
+  rmse <- c(rmse1, rmse2, rmse3) # RMSE of heterogeneous stage 1 causal effects at times 1, 2, 3, respectively
+  
+  # bias of heterogeneous causal effect estimators
   Z1.grid <- c(-3, -2, -1, 0, 1, 2, 3)
   # matrix to store bias
   bias.mat <- matrix(NA, nrow = 3, ncol = length(Z1.grid))
-  # estimated stage 1 heterogeneous treatment effect
+  # true stage 1 individual treatment effects at times 1, 2, 3, respectively, based on TRUE stage 2 optimal rule
   delta1 <- 2*alpha1*Z1.grid
   delta2 <- 2*alpha2*Z1.grid + gamma2*(ifelse((w[2]*beta2+w[3]*beta3)*Z1.grid+w[2]*gamma2+w[3]*gamma3 > 0, -1, 1) + ifelse((w[2]*beta2+w[3]*beta3)*Z1.grid-w[2]*gamma2-w[3]*gamma3 > 0, -1, 1)) # calculate A2opt analytically
   delta3 <- 2*alpha3*Z1.grid + gamma3*(ifelse((w[2]*beta2+w[3]*beta3)*Z1.grid+w[2]*gamma2+w[3]*gamma3 > 0, -1, 1) + ifelse((w[2]*beta2+w[3]*beta3)*Z1.grid-w[2]*gamma2-w[3]*gamma3 > 0, -1, 1))
+  # estimated stage 1 individual treatment effects
   dat1.psd <- cbind.data.frame("Z1" = rep(Z1.grid, each = 3), "A1" = rep(1, length(Z1.grid)*3), "time" = rep(c(1, 2, 3), length(Z1.grid))) # pseudo data
   dat0.psd <- cbind.data.frame("Z1" = rep(Z1.grid, each = 3), "A1" = rep(-1, length(Z1.grid)*3), "time" = rep(c(1, 2, 3), length(Z1.grid)))
   delta.hat <- matrix(predict(output$mod.s1, newdata = dat1.psd), ncol = 3, byrow = TRUE) - matrix(predict(output$mod.s1, newdata = dat0.psd), ncol = 3, byrow = TRUE)
-  # bias
+  # store bias values
   bias.mat[1, ] <- delta.hat[, 1] - delta1
   bias.mat[2, ] <- delta.hat[, 2] - delta2
   bias.mat[3, ] <- delta.hat[, 3] - delta3
+  
+  # return the calculated metrics
   return(list("pci.s2" = pci.s2, "pci.s1" = pci.s1, "rmse" = rmse, "bias.mat" = bias.mat))
 }
