@@ -1,6 +1,6 @@
 # R Code for "Modified Q-learning with generalized estimating equations for optimizing dynamic treatment regimes with repeated-measures outcomes"
 
-This repository contains five R scripts which display functions and syntax that are used to carry out the simulation study and data analysis for the modified Q-learning with GEE (mQGEE) paper. The results in the mQGEE paper can be reproduced by running the code in statistical software R version 4.0.3 (2020-10-10). The following sections briefly explain how to use the files.
+This file contains five R scripts which display functions and syntax that are used to carry out the simulation study and data analysis for the modified Q-learning with GEE (mQGEE) paper. The results in the mQGEE paper can be reproduced by running the code in statistical software R version 4.0.3 (2020-10-10). The following sections briefly explain how to use the files.
 
 ## Simulation study
 
