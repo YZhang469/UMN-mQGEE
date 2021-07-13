@@ -174,7 +174,6 @@ sim.neg23.mis <- simulation(I = 1000,
 
 ## results: tables and figures
 
-set.seed(2021)
 sumSim <- function(N.sim = 1000, alpha1 = -2.0, alpha2 = -1.7, alpha3 = -1.6, beta2 = 0, beta3 = 0, gamma2 = -1.2, gamma3 = -0.8, 
                    sigma.v = 3.2, sigma.e = 2.7){
   
