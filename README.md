@@ -17,7 +17,7 @@ The document [functions.R](https://github.com/YZhang469/MQGEE/blob/master/functi
 
 The document [simulation_by_sample_size.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_by_sample_size.R) shows the code for the simulation study in the mQGEE manuscript.
 
-* The function `simulation` runs I simulations, where I is the number of simulations and is user-specified, and generates a list of metrics associated with the simulated datasets.
+* The function `simulation` runs $I$ simulations, where $I$ is the number of simulations and is user-specified, and generates a list of metrics associated with the simulated datasets.
 
 * The rest of the script shows the code to perform the simulation under different scenarios discussed in the mQGEE paper, and summarize the results using tables and figures. Note that it usually takes from 30 minutes to 1 hour for 1000 simulations to run.
 
