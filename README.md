@@ -35,4 +35,4 @@ The document [data_analysis.R](https://github.com/YZhang469/UMN-mQGEE/blob/maste
 
 * The function `analyzeData` analyzes the dataset using mQGEE. Users can specify whether they want to use QGEE or mQGEE. Since we have a considerably large set of covariates (with time-dependent coefficients) in the model at each stage, we perform variable selection using the function `gee_stepper`. Results are then summarized using relevant tables and figures.
 
-* The R code for the additional results in the supplementary materials, where unequal weights of the longitudinal outcomes are considered, are also included in the document.
+* The R code for the additional results in the supplementary materials, where unequal weights of the longitudinal outcomes are considered, is also included in the document.
