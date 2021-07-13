@@ -21,7 +21,7 @@ The document [simulation_by_sample_size.R](https://github.com/YZhang469/UMN-mQGE
 
 * The rest of the script shows the code to perform the simulation under different scenarios discussed in the mQGEE paper, and summarize the results using tables and figures. Note that it usually takes from 30 minutes to 1 hour for 1000 simulations to run.
 
-The documents [simulation_by_weights.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_by_weights.R), [simulation_relative_efficiency.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_relative_efficiency.R) contain the code for the simulation studies in the mQGEE supplementary materials.
+The documents [simulation_by_weights.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_by_weights.R) and [simulation_relative_efficiency.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_relative_efficiency.R) contain the code for the simulation studies in the mQGEE supplementary materials.
 
 ## Application
 
