@@ -11,7 +11,7 @@ This repository contains R scripts which display functions and syntax that are u
 
 ### Custom functions
 
-The document [functions.R](https://github.com/YZhang469/MQGEE/blob/master/functions.R) lists all the custom functions used in the simulation.
+The document [functions.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation/functions.R) lists all the custom functions used in the simulation.
 
 * The function `generateData.joint` generates a dataset, where the repeated-measures outcomes follow a multivariate normal distribution. This is equivalent to a conditional data generating mechanism with an unmeasured covariate.
 * The function `Q` analyzes the dataset generated using composite Q-learning where the repeated-measures outcomes are collapsed with a weighted average. Users can choose between composite Q-learning (Q) and modified composite Q-learning (mQ). `Q` outputs a list of two models and two datasets: estimated models for stage 1 and stage 2 Q-functions using linear squares estimators, the original dataset, and the estimated dataset with optimal (counterfactual) outcomes based on parameter estimates from both Q-functions.
