@@ -20,25 +20,25 @@ The document [functions.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/si
 
 ### Simulation code and results
 
-The document [simulation_by_sample_size.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_by_sample_size.R) shows the code for the simulation study in Section 4.1 of the manuscript.
+The document [simulation_by_sample_size.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation/simulation_by_sample_size.R) shows the code for the simulation study in Section 4.1 of the manuscript.
 
 * The function `simulation` runs *I* simulations, where *I* is the number of simulations and is user-specified, and generates a list of metrics associated with the simulated datasets.
 
 * The rest of the script shows the code to perform the simulation under different scenarios discussed in the mQ-GEE paper, and summarize the results using tables and figures. Note that it usually takes from 30 minutes to 1 hour for 1000 simulations to run.
 
-The document [simulation_by_marginal_trajectory.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_by_marginal_trajectory.R) shows the code for the simulation study in Section 4.2 of the manuscript.
+The document [simulation_by_marginal_trajectory.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation/simulation_by_marginal_trajectory.R) shows the code for the simulation study in Section 4.2 of the manuscript.
 
-The documents [simulation_by_weights.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_by_weights.R) and [simulation_relative_efficiency.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation_relative_efficiency.R) contain the code for the simulation studies in the mQ-GEE supplementary materials.
+The documents [simulation_by_weights.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation/simulation_by_weights.R) and [simulation_relative_efficiency.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulation/simulation_relative_efficiency.R) contain the code for the simulation studies in the mQ-GEE supplementary materials.
 
 ## Application
 
 ### Data
 
-To illustrate the implementation of mQ-GEE, we analyze a dataset collected from the M-bridge study. While we are not able to provide the original dataset, we include a simulated dataset [simulated_data.csv](https://github.com/YZhang469/UMN-mQGEE/blob/master/simulated_data.csv) which has the same format as the M-bridge data.
+To illustrate the implementation of mQ-GEE, we analyze a dataset collected from the M-bridge study. While we are not able to provide the original dataset, we include a simulated dataset [simulated_data.csv](https://github.com/YZhang469/UMN-mQGEE/blob/master/application/simulated_data.csv) which has the same format as the M-bridge data.
 
 ### Analysis
 
-The document [data_analysis.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/data_analysis.R) shows the code to analyze the abovementioned dataset
+The document [data_analysis.R](https://github.com/YZhang469/UMN-mQGEE/blob/master/application/data_analysis.R) shows the code to analyze the abovementioned dataset
 
 * The function `analyzeData` analyzes the dataset using mQ-GEE. Users can specify whether they want to use Q-GEE or mQ-GEE. Since we have a considerably large set of covariates (with time-dependent coefficients) in the model at each stage, we perform variable selection using the function `gee_stepper`. Results are then summarized using relevant tables and figures.
 
