@@ -3,7 +3,7 @@ doi: [10.1093/jrsssc/qlad037](https://doi.org/10.1093/jrsssc/qlad037)
 
 Authors: Yuan Zhang, David M. Vock, Megan E. Patrick, Lizbeth H. Finestack, Thomas A. Murray
 
-Code was written by Y. Zhang. Please address all questions or comments to yuan.zhang@pennmedicine.upenn.edu.
+Code is written by Y. Zhang. Please address all questions or comments to yuan.zhang@pennmedicine.upenn.edu.
 
 This repository contains R scripts which display functions and syntax that are used to carry out the simulation study and data analysis for the modified Q-learning with GEE (mQ-GEE) paper. The simulation results in the mQ-GEE paper can be reproduced by running the code in statistical software R version 4.0.3 (2020-10-10). The application results only demonstrate how to apply our proposed method using a simulated data and should not be viewed as meaningful conclusions drawn from the M-bridge study. The following sections briefly explain how to use the files.
 
